@@ -1,23 +1,18 @@
 package com.example;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.reactive.mutiny.Mutiny;
 import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.awt.print.Book;
-
-import static io.restassured.RestAssured.given;
 import static org.hibernate.cfg.JdbcSettings.FORMAT_SQL;
 import static org.hibernate.cfg.JdbcSettings.HIGHLIGHT_SQL;
 import static org.hibernate.cfg.JdbcSettings.PASS;
 import static org.hibernate.cfg.JdbcSettings.SHOW_SQL;
 import static org.hibernate.cfg.JdbcSettings.URL;
 import static org.hibernate.cfg.JdbcSettings.USER;
-import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 class TestControllerTest {
@@ -44,14 +39,14 @@ class TestControllerTest {
                 .unwrap(Mutiny.SessionFactory.class);
     }
 
-    @Inject
-    Mutiny.SessionFactory factory2;
-
     @Test
     void test() {
         MockUser mockUser = new MockUser();
         mockUser.setName("test");
         factory.withStatelessTransaction(session -> session.insert(mockUser)).await().indefinitely();
+        MockUser user = factory.withStatelessTransaction(
+                session -> session.get(MockUser.class, 1L)).await().indefinitely();
+        assertEquals("test", user.getName());
     }
 
 
